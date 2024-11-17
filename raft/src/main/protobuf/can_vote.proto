@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package rpc;
+
+message CanVote{
+    bool CanVote = 1;
+}

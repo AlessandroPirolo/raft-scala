@@ -15,6 +15,9 @@ enablePlugins(
 )
 
 Compile / mainClass := Some("com.pirale.raft.Main")
+Compile / PB.targets := Seq(
+  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
+)
 Docker / packageName := "pirale/raft-node"
 dockerExposedPorts ++= Seq(8761, 7654)
 dockerEnvVars ++= Map(("COCKROACH_HOST", "dev.localhost"), ("COCKROACH_PORT", "26257"))
@@ -30,7 +33,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
   "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
-  "ch.qos.logback" % "logback-classic" % "1.5.7"
+  "ch.qos.logback" % "logback-classic" % "1.5.7",
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
 )
 
 Test / parallelExecution := false

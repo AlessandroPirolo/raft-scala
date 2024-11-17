@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package rpc;
+
+
+message VoteResponse {
+    string Id = 1;
+    bool VoteGranted = 2;
+    uint64 Term = 3;
+}
