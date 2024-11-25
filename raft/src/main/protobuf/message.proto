@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package rpc;
+
+enum Type {
+  AENTRY = 0;
+  ARESP = 1;
+  VREQ = 2;
+  VRESP = 3;
+  VOTE = 4;
+}
+
+message ProtoMessage{
+    Type type = 1;
+    bytes payload = 2;
+}
