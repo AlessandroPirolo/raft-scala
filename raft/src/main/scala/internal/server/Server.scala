@@ -1,68 +1,28 @@
 package server 
 
-import akka.actor.typed.Behavior
-import akka.actor.typed.scaladsl.Behaviors
-import akka.stream.scaladsl.Flow
-import akka.http.scaladsl.model.ws.{Message, TextMessage, BinaryMessage}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.Http
-import scala.util.Success
-import scala.util.Failure
-import akka.http.scaladsl.Http.ServerBinding
-import messageHandler.MessageHandler
-import akka.stream.javadsl.Sink
+import java.net.InetSocketAddress
+import akka.io.{IO, Tcp}
+import akka.actor.{Actor, Props}
 
-object Server {
+object Server: 
+  def props(host: String, port: Int) =
+    Props(classOf[Server], host, port)
 
-  sealed trait ResultMessage
-  private final case class Started(binding: ServerBinding) extends ResultMessage
-  private final case class StartedFailed(ex: Throwable) extends ResultMessage
-  
-  def apply(host: String, port: Int): Behavior[ResultMessage] = Behaviors.setup { ctx => 
+  class Server(host: String, port: Int) extends Actor {
+    import Tcp._
+    import context.system
 
-    implicit val system = ctx.system
+    IO(Tcp) ! Bind(self, new InetSocketAddress(host, port))
 
-    val messageHandler = ctx.spawn(MessageHandler(), "messageHandler")
+    def receive: Actor.Receive = 
+      case b @ Bound(localAddress) => 
+        context.system.log.info("Server started at http://{}:{}/", 
+            localAddress.getHostName(), 
+            localAddress.getPort())
+      
+      case CommandFailed(_: Bind) => throw new RuntimeException("Failed to bind")
 
-    def handler: Flow[Message, Message, Any] = 
-      Flow[Message].map(
-        mex => {
-          messageHandler ! mex
-          mex 
-        }
-      )
+      case c @ Connected(remoteAddress, localAddress) => 
+        val connection = sender()
 
-    val webSocketRoute = 
-      path("/") {
-        handleWebSocketMessages(handler)
-      }
-
-    val binding = Http().newServerAt(host, port).bindFlow(webSocketRoute)
-
-    ctx.pipeToSelf(binding) {
-      case Success(binding) => {
-        ctx.log.info("Binding successful: server started")
-        Started(binding)
-      }
-      case Failure(exception) => {
-        ctx.log.error("Error starting the server: " + exception.getMessage())
-        StartedFailed(exception)
-      }
-    }
-
-    def starting(): Behaviors.Receive[ResultMessage] = 
-      Behaviors.receiveMessage[ResultMessage] {
-        case Started(binding) => { 
-          ctx.log.info("Server started at http://{}:{}/", 
-                binding.localAddress.getHostName(), 
-                binding.localAddress.getPort())
-          Behaviors.same
-        }
-        case StartedFailed(ex) =>
-          throw new RuntimeException(ex)
-      }
-
-    starting()
- 
   }
-}
