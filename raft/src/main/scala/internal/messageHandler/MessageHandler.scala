@@ -2,7 +2,6 @@ package messageHandler
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
-import akka.http.scaladsl.model.ws.{Message, TextMessage, BinaryMessage}
 import rpc.message.{ProtoMessage, Type}
 import rpc.append_entry_request.AppendEntryRequest
 import rpc.append_entry_response.AppendEntryResponse
@@ -16,7 +15,7 @@ import rpcs.RpcHandler
 
 object MessageHandler {
  
-  def apply(): Behavior[Message] = Behaviors.setup { ctx =>
+  def apply(): Behavior[ByteString] = Behaviors.setup { ctx =>
 
     val rpcHandler = ctx.spawn(RpcHandler(), "RpcHandler")
 
@@ -48,25 +47,16 @@ object MessageHandler {
         }
       }
 
-    def running(): Behavior[Message] =
-      Behaviors.receiveMessage[Message] {
-        case bm: BinaryMessage => {
+    def running(): Behavior[ByteString] =
+      Behaviors.receiveMessage[ByteString] {
+        case bm: ByteString => {
           ctx.log.info("Received binary message")
-          val extrapolatedMsg: ByteString = bm.getStrictData
-          val rawMsg: ProtoMessage = ProtoMessage.parseFrom(extrapolatedMsg.toArrayUnsafe())
+          val rawMsg: ProtoMessage = ProtoMessage.parseFrom(bm.toArrayUnsafe())
           val rpc: Rpc = retreivePayload(rawMsg._1)(rawMsg._2.toByteArray())
           rpcHandler ! rpc
           Behaviors.same
         }
 
-        case tm: TextMessage => {
-          ctx.log.info("Received text message")
-          var extrapolatedMsg: String = tm.getStrictText
-          var rawMsg: ProtoMessage = ProtoMessage.parseFrom(extrapolatedMsg.getBytes())
-          val rpc: Rpc = retreivePayload(rawMsg._1)(rawMsg._2.toByteArray())
-          rpcHandler ! rpc
-          Behaviors.same
-        }
       }
 
     running()
