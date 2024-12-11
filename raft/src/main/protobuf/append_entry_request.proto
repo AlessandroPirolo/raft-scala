@@ -5,11 +5,11 @@ package rpc;
 import "log_entry.proto";
 
 message AppendEntryRequest {
-	uint64 Term=2;
-	int64 PrevLogIndex=3;
-	uint64 PrevLogTerm=4;
-	uint64 CommitIndex=5;
+	uint32 Term=2;
+	int32 PrevLogIndex=3;
+	uint32 PrevLogTerm=4;
+	uint32 CommitIndex=5;
 	string LeaderId=6;
 	repeated logEntry Entries=8;
-	int64 LeaderCommit =9;
+	int32 LeaderCommit =9;
 }

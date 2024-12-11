@@ -4,8 +4,8 @@ package rpc;
 
 
 message VoteRequest {
-    uint64 Term = 2;
+    uint32 Term = 2;
     string CandidateId = 3;
-    int64 LastLogIndex = 4;
-    uint64 LastLogTerm = 5;
+    int32 LastLogIndex = 4;
+    uint32 LastLogTerm = 5;
 }

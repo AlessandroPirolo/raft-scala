@@ -1,19 +1,8 @@
 package rpcs
 
 import akka.actor.typed.Behavior
-import akka.actor.typed.scaladsl.Behaviors 
-import rpc.append_entry_response.AppendEntryResponse
-import rpc.append_entry_request.AppendEntryRequest
-import rpc.vote_request.VoteRequest
-import rpc.vote_response.VoteResponse
-import rpc.can_vote.CanVote
-  
-sealed trait Rpc 
-case object CanVote extends Rpc
-final case class AppendEntryReq(msg: AppendEntryRequest) extends Rpc
-final case class AppendEntryResp(msg: AppendEntryResponse) extends Rpc
-final case class VoteReq(msg: VoteRequest) extends Rpc
-final case class VoteResp(msg: VoteResponse) extends Rpc
+import akka.actor.typed.scaladsl.Behaviors  
+import rpcs.message.*
 
 object RpcHandler {
 

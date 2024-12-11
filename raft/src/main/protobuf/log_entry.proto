@@ -11,8 +11,8 @@ enum Operation {
 }
 
 message logEntry {
-	uint64 Term=1;
-  uint64 Idx=2;
+	uint32 Term=1;
+  uint32 Idx=2;
 	string Description=3;
 	Operation OpType=4;
   string FileName=5;
